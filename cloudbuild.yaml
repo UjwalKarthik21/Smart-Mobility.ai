@@ -1,0 +1,19 @@
+# Cloud Build configuration to build the container and deploy to Cloud Run
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/smart-mobility:$SHORT_SHA', '.' ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push', 'gcr.io/$PROJECT_ID/smart-mobility:$SHORT_SHA' ]
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run deploy smart-mobility \
+          --image gcr.io/$PROJECT_ID/smart-mobility:$SHORT_SHA \
+          --region ${_REGION:-us-central1} \
+          --platform managed \
+          --allow-unauthenticated
+
+# substitutions:
+#  _REGION: us-central1
